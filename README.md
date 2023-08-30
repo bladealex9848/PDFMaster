@@ -34,7 +34,7 @@ Con PDFMaster, en menos de 50 líneas de código, aprenderás a aprovechar todo 
 ## Instalación
 
 1. Asegúrate de tener Python 3.8 o superior instalado en tu máquina.
-2. Clona este repositorio usando `git clone https://github.com/bladealex9848`
+2. Clona este repositorio usando `git clone https://github.com/bladealex9848/PDFMaster.git`
 3. Navega al directorio del proyecto `cd PDFMaster`
 4. Instala las dependencias necesarias usando `pip install -r requirements.txt`
 5. Ejecuta `streamlit run app.py` para iniciar la aplicación.
