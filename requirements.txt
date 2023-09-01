@@ -3,5 +3,5 @@ langchain
 faiss-cpu
 streamlit
 PyPDF2
-pdf2docx
+# pdf2docx
 sentence_transformers
