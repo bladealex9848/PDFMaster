@@ -25,6 +25,9 @@ if API_KEY is None:
             f.write('tu_clave_de_api')
         API_KEY = st.text_input('OpenAI API Key', type='password')
 
+if API_KEY is None:
+    API_KEY = st.secrets["API_KEY"]
+
 pdf_obj = st.file_uploader("Carga tu documento", type="pdf")
 
 
@@ -75,7 +78,7 @@ def convert_pdf_to_word(pdf_obj):
 def generate_summary(text):
     import openai
 
-    openai.api_key = API_KEY
+    openai.api_key = API_KEY or st.secrets["API_KEY"]
 
     # Cargar un tokenizador pre-entrenado
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
