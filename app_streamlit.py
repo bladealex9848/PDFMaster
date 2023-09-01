@@ -14,21 +14,22 @@ from transformers import BertTokenizer
 st.set_page_config('PDFMaster')
 st.title("PDFMaster: Tu asistente de documentos PDF")
 
-# Cargar API_KEY desde una variable de entorno, un archivo o el input del usuario
-API_KEY = os.environ.get('API_KEY')
-if API_KEY is None:
-    try:
-        with open('api_key.txt', 'r') as f:
-            API_KEY = f.read().strip()
-    except FileNotFoundError:
-        with open('api_key.txt', 'w') as f:
-            f.write('tu_clave_de_api')
-        API_KEY = st.text_input('OpenAI API Key', type='password')
+# Intenta cargar la API Key desde st.secrets
+API_KEY = st.secrets.get('API_KEY')
 
-if API_KEY is None:
-    API_KEY = st.secrets["API_KEY"]
+# Si la API Key no está en st.secrets, pídela al usuario
+if not API_KEY:
+    API_KEY = st.text_input('OpenAI API Key', type='password')
+
+# Si no se ha proporcionado la API Key, no permitas que el usuario haga nada más
+if not API_KEY:
+    st.stop()
 
 pdf_obj = st.file_uploader("Carga tu documento", type="pdf")
+
+# Si no se ha cargado un PDF, no permitas que el usuario haga nada más
+if not pdf_obj:
+    st.stop()
 
 
 @st.cache_resource
