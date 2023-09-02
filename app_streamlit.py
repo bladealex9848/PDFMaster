@@ -1,35 +1,48 @@
 import os
-import tempfile
 import streamlit as st
 from PyPDF2 import PdfReader
-# from pdf2docx import Converter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
-import io
 from transformers import BertTokenizer
+from langdetect import detect
+from googletrans import Translator
 
-st.set_page_config('PDFMaster')
-st.title("PDFMaster: Tu asistente de documentos PDF")
+# Detect user language
+user_input = st.text_input("Please enter any question or comment:")
+if user_input:
+    language = detect(user_input)
+    translator = Translator()
 
-# Intenta cargar la API Key desde st.secrets
+    # Translate the title and interface texts to the detected language
+    translated_title = translator.translate(
+        "PDFMaster: Your PDF Document Assistant", dest=language).text
+    st.title(translated_title)
+
+# Try to load the API Key from st.secrets
 API_KEY = st.secrets.get('API_KEY')
 
-# Si la API Key no está en st.secrets, pídela al usuario
+# If the API Key is not in st.secrets, ask the user for it
 if not API_KEY:
-    API_KEY = st.text_input('OpenAI API Key', type='password')
+    translated_text = translator.translate(
+        'OpenAI API Key', dest=language).text
+    API_KEY = st.text_input(translated_text, type='password')
 
-# Si no se ha proporcionado la API Key, no permitas que el usuario haga nada más
+# If the API Key has not been provided, do not allow the user to do anything else
 if not API_KEY:
     st.stop()
 
-pdf_obj = st.file_uploader("Carga tu documento", type="pdf")
+translated_text = translator.translate(
+    "Upload your document", dest=language).text
+pdf_obj = st.file_uploader(translated_text, type="pdf")
 
-# Si no se ha cargado un PDF, no permitas que el usuario haga nada más
+# If a PDF has not been uploaded, do not allow the user to do anything else
 if not pdf_obj:
     st.stop()
+
+# Function to create text embeddings from a PDF
 
 
 @st.cache_resource
@@ -52,28 +65,7 @@ def create_embeddings(pdf):
 
     return knowledge_base, text
 
-
-def convert_pdf_to_word(pdf_obj):
-    tfile = tempfile.NamedTemporaryFile(delete=False)
-    tfile.write(pdf_obj.read())
-    tfile.close()  # Asegúrate de cerrar el archivo
-
-    # Obtener el nombre del archivo sin la extensión
-    filename = os.path.splitext(pdf_obj.name)[0]
-    word_filename = f"{tempfile.gettempdir()}/{filename}.docx"
-
-    cv = Converter(tfile.name)
-    cv.convert(word_filename, start=0, end=None)
-    cv.close()
-
-    os.unlink(tfile.name)  # Elimina el archivo
-
-    with open(word_filename, 'rb') as f:
-        word_file = io.BytesIO(f.read())
-
-    os.unlink(word_filename)  # Elimina el archivo
-
-    return word_file
+# Function to generate a summary of a text
 
 
 def generate_summary(text):
@@ -81,10 +73,10 @@ def generate_summary(text):
 
     openai.api_key = API_KEY or st.secrets["API_KEY"]
 
-    # Cargar un tokenizador pre-entrenado
+    # Load a pre-trained tokenizer
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
-    # Dividir el texto en tokens
+    # Split the text into tokens
     tokens = tokenizer.tokenize(text)
     num_tokens = len(tokens)
     chunk_size = 4000
@@ -97,7 +89,7 @@ def generate_summary(text):
 
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Por favor, proporciona un resumen del siguiente texto:\n\n{segment_text}"}
+            {"role": "user", "content": f"Please provide a summary of the following text:\n\n{segment_text}"}
         ]
 
         response = openai.ChatCompletion.create(
@@ -113,41 +105,44 @@ def generate_summary(text):
 
 
 if pdf_obj:
-    st.sidebar.header('Opciones')
+    translated_text = translator.translate('Options', dest=language).text
+    st.sidebar.header(translated_text)
     options = [
-        'Realizar preguntas',
-        # 'Convertir a Word',
-        'Generar resumen',
-        # 'Comprimir PDF',
-        # 'Aplicar OCR',
+        translator.translate('Ask questions', dest=language).text,
+        translator.translate('Generate summary', dest=language).text,
     ]
-    selected_option = st.sidebar.selectbox(
-        "¿Qué deseas hacer con el PDF?", options)
+    translated_text = translator.translate(
+        "What do you want to do with the PDF?", dest=language).text
+    selected_option = st.sidebar.selectbox(translated_text, options)
 
-    if selected_option == 'Realizar preguntas':
-        st.header("Realizar preguntas")
+    if selected_option == options[0]:
+        translated_text = translator.translate(
+            "Ask questions", dest=language).text
+        st.header(translated_text)
         knowledge_base, _ = create_embeddings(pdf_obj)
-        user_question = st.text_input("Haz una pregunta sobre tu PDF:")
+        translated_text = translator.translate(
+            "Ask a question about your PDF:", dest=language).text
+        user_question = st.text_input(translated_text)
 
         if user_question:
             os.environ["OPENAI_API_KEY"] = API_KEY
             docs = knowledge_base.similarity_search(user_question, 3)
             llm = ChatOpenAI(model_name='gpt-3.5-turbo')
             chain = load_qa_chain(llm, chain_type="stuff")
-            respuesta = chain.run(input_documents=docs, question=user_question)
-            st.write(respuesta)
+            answer = chain.run(input_documents=docs, question=user_question)
 
-    elif selected_option == 'Convertir a Word':
-        st.header("Convertir a Word")
-        if st.button("Convertir"):
-            word_file = convert_pdf_to_word(pdf_obj)
-            # Obtener el nombre del archivo sin la extensión
-            filename = os.path.splitext(pdf_obj.name)[0]
-            st.download_button('Descargar archivo Word',
-                               word_file, f'{filename}.docx')
+            # Translate the answer to the detected language
+            translated_answer = translator.translate(
+                answer, dest=language).text
+            st.write(translated_answer)
 
-    elif selected_option == 'Generar resumen':
-        st.header("Generar resumen")
+    elif selected_option == options[1]:
+        translated_text = translator.translate(
+            "Generate summary", dest=language).text
+        st.header(translated_text)
         _, text = create_embeddings(pdf_obj)
-        resumen = generate_summary(text)
-        st.write(resumen)
+        summary = generate_summary(text)
+
+        # Translate the summary to the detected language
+        translated_summary = translator.translate(summary, dest=language).text
+        st.write(translated_summary)
