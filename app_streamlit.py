@@ -1,4 +1,5 @@
 import os
+import openai
 import streamlit as st
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -8,17 +9,22 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
 from transformers import BertTokenizer
 from langdetect import detect
-from googletrans import Translator
 
 # Detect user language
 user_input = st.text_input("Please enter any question or comment:")
 if user_input:
     language = detect(user_input)
-    translator = Translator()
+
+    # Set OpenAI API key
+    openai.api_key = API_KEY
 
     # Translate the title and interface texts to the detected language
-    translated_title = translator.translate(
-        "PDFMaster: Your PDF Document Assistant", dest=language).text
+    response = openai.Translation.create(
+        source="en",
+        target=language,
+        text="PDFMaster: Your PDF Document Assistant",
+    )
+    translated_title = response['data']['translations'][0]['translatedText']
     st.title(translated_title)
 
 # Try to load the API Key from st.secrets
@@ -26,16 +32,24 @@ API_KEY = st.secrets.get('API_KEY')
 
 # If the API Key is not in st.secrets, ask the user for it
 if not API_KEY:
-    translated_text = translator.translate(
-        'OpenAI API Key', dest=language).text
+    response = openai.Translation.create(
+        source="en",
+        target=language,
+        text="OpenAI API Key",
+    )
+    translated_text = response['data']['translations'][0]['translatedText']
     API_KEY = st.text_input(translated_text, type='password')
 
 # If the API Key has not been provided, do not allow the user to do anything else
 if not API_KEY:
     st.stop()
 
-translated_text = translator.translate(
-    "Upload your document", dest=language).text
+response = openai.Translation.create(
+    source="en",
+    target=language,
+    text="Upload your document",
+)
+translated_text = response['data']['translations'][0]['translatedText']
 pdf_obj = st.file_uploader(translated_text, type="pdf")
 
 # If a PDF has not been uploaded, do not allow the user to do anything else
@@ -103,25 +117,48 @@ def generate_summary(text):
 
     return summary
 
+# Main App
+
 
 if pdf_obj:
-    translated_text = translator.translate('Options', dest=language).text
+    response = openai.Translation.create(
+        source="en",
+        target=language,
+        text="Options",
+    )
+    translated_text = response['data']['translations'][0]['translatedText']
     st.sidebar.header(translated_text)
-    options = [
-        translator.translate('Ask questions', dest=language).text,
-        translator.translate('Generate summary', dest=language).text,
-    ]
-    translated_text = translator.translate(
-        "What do you want to do with the PDF?", dest=language).text
+    response = openai.Translation.create(
+        source="en",
+        target=language,
+        text="Ask questions",
+    )
+    ask_questions = response['data']['translations'][0]['translatedText']
+    response = openai.Translation.create(
+        source="en",
+        target=language,
+        text="Generate summary",
+    )
+    generate_summary_option = response['data']['translations'][0]['translatedText']
+    options = [ask_questions, generate_summary_option]
+
+    response = openai.Translation.create(
+        source="en",
+        target=language,
+        text="What do you want to do with the PDF?",
+    )
+    translated_text = response['data']['translations'][0]['translatedText']
     selected_option = st.sidebar.selectbox(translated_text, options)
 
-    if selected_option == options[0]:
-        translated_text = translator.translate(
-            "Ask questions", dest=language).text
-        st.header(translated_text)
+    if selected_option == ask_questions:
+        st.header(ask_questions)
         knowledge_base, _ = create_embeddings(pdf_obj)
-        translated_text = translator.translate(
-            "Ask a question about your PDF:", dest=language).text
+        response = openai.Translation.create(
+            source="en",
+            target=language,
+            text="Ask a question about your PDF:",
+        )
+        translated_text = response['data']['translations'][0]['translatedText']
         user_question = st.text_input(translated_text)
 
         if user_question:
@@ -132,17 +169,24 @@ if pdf_obj:
             answer = chain.run(input_documents=docs, question=user_question)
 
             # Translate the answer to the detected language
-            translated_answer = translator.translate(
-                answer, dest=language).text
+            response = openai.Translation.create(
+                source="en",
+                target=language,
+                text=answer,
+            )
+            translated_answer = response['data']['translations'][0]['translatedText']
             st.write(translated_answer)
 
-    elif selected_option == options[1]:
-        translated_text = translator.translate(
-            "Generate summary", dest=language).text
-        st.header(translated_text)
+    elif selected_option == generate_summary_option:
+        st.header(generate_summary_option)
         _, text = create_embeddings(pdf_obj)
         summary = generate_summary(text)
 
         # Translate the summary to the detected language
-        translated_summary = translator.translate(summary, dest=language).text
+        response = openai.Translation.create(
+            source="en",
+            target=language,
+            text=summary,
+        )
+        translated_summary = response['data']['translations'][0]['translatedText']
         st.write(translated_summary)
