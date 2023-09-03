@@ -62,7 +62,7 @@ def create_embeddings(pdf):
 # Función para generar resumen
 
 
-def generate_summary(text, lang):
+def generate_summary(text):
     import openai
 
     openai.api_key = API_KEY
@@ -84,15 +84,20 @@ def generate_summary(text, lang):
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": f"Please provide a summary of the following text:\n\n{segment_text}" if lang ==
-             'en' else f"Por favor, proporciona un resumen del siguiente texto:\n\n{segment_text}"}
+                'en' else f"Por favor, proporciona un resumen del siguiente texto:\n\n{segment_text}"}
         ]
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            max_tokens=300,
-            temperature=0.5,
-        )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                max_tokens=300,
+                temperature=0.5,
+            )
+        except openai.error.InvalidRequestError as e:
+            st.error(
+                "Ha ocurrido un error con la solicitud a la API de OpenAI. Por favor, inténtalo de nuevo más tarde.")
+            st.stop()
 
         summary += response['choices'][0]['message']['content'].strip()
 
