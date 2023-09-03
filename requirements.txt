@@ -1,4 +1,4 @@
-openai
+# openai
 langchain
 faiss-cpu
 streamlit
