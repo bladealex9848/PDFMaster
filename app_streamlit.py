@@ -1,5 +1,4 @@
 import os
-import tempfile
 import streamlit as st
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -7,13 +6,14 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
-import io
 from transformers import BertTokenizer
 from langdetect import detect
 
+# Configuración de Streamlit
 st.set_page_config('PDFMaster')
 st.title("PDFMaster: Tu asistente de documentos PDF")
 
+# Cargar API Key
 # Intenta cargar la API Key desde st.secrets
 API_KEY = st.secrets.get('API_KEY')
 
@@ -25,6 +25,7 @@ if not API_KEY:
 if not API_KEY:
     st.stop()
 
+# Cargar PDF
 pdf_obj = st.file_uploader(
     "Carga tu documento / Upload your document", type="pdf")
 
@@ -32,14 +33,18 @@ pdf_obj = st.file_uploader(
 if not pdf_obj:
     st.stop()
 
+# Función para crear embeddings
+
 
 @st.cache_resource
 def create_embeddings(pdf):
+    # Leer PDF
     pdf_reader = PdfReader(pdf)
     text = ""
     for page in pdf_reader.pages:
         text += page.extract_text()
 
+    # Dividir texto en fragmentos
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
         chunk_overlap=100,
@@ -47,14 +52,17 @@ def create_embeddings(pdf):
     )
     chunks = text_splitter.split_text(text)
 
+    # Crear embeddings
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     knowledge_base = FAISS.from_texts(chunks, embeddings)
 
     return knowledge_base, text
 
+# Función para generar resumen
 
-def generate_summary(text):
+
+def generate_summary(text, lang):
     import openai
 
     openai.api_key = API_KEY
@@ -76,7 +84,7 @@ def generate_summary(text):
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": f"Please provide a summary of the following text:\n\n{segment_text}" if lang ==
-                'en' else f"Por favor, proporciona un resumen del siguiente texto:\n\n{segment_text}"}
+             'en' else f"Por favor, proporciona un resumen del siguiente texto:\n\n{segment_text}"}
         ]
 
         response = openai.ChatCompletion.create(
@@ -91,14 +99,16 @@ def generate_summary(text):
     return summary
 
 
+# Principal
 if pdf_obj:
+    # Crear embeddings
     knowledge_base, text = create_embeddings(pdf_obj)
 
-    # Detecta el idioma del texto
+    # Detectar idioma
     lang = detect(text)
     lang = 'en' if lang != 'es' else 'es'  # Solo considera inglés y español
 
-    # Cambia las opciones según el idioma
+    # Opciones de usuario
     st.sidebar.header('Options' if lang == 'en' else 'Opciones')
     options = [
         'Ask questions',
@@ -110,6 +120,7 @@ if pdf_obj:
     selected_option = st.sidebar.selectbox(
         "What do you want to do with the PDF?" if lang == 'en' else "¿Qué deseas hacer con el PDF?", options)
 
+    # Preguntar
     if selected_option == ('Ask questions' if lang == 'en' else 'Realizar preguntas'):
         st.header("Ask Questions" if lang == 'en' else "Realizar preguntas")
         user_question = st.text_input(
@@ -123,6 +134,7 @@ if pdf_obj:
             respuesta = chain.run(input_documents=docs, question=user_question)
             st.write(respuesta)
 
+    # Generar resumen
     elif selected_option == ('Generate summary' if lang == 'en' else 'Generar resumen'):
         st.header("Generate Summary" if lang == 'en' else "Generar resumen")
         resumen = generate_summary(text, lang)
