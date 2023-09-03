@@ -12,6 +12,7 @@ from transformers import BertTokenizer
 from langdetect import detect
 
 st.set_page_config('PDFMaster')
+st.title("PDFMaster: Tu asistente de documentos PDF")
 
 # Intenta cargar la API Key desde st.secrets
 API_KEY = st.secrets.get('API_KEY')
@@ -24,7 +25,8 @@ if not API_KEY:
 if not API_KEY:
     st.stop()
 
-pdf_obj = st.file_uploader("Carga tu documento", type="pdf")
+pdf_obj = st.file_uploader(
+    "Carga tu documento / Upload your document", type="pdf")
 
 # Si no se ha cargado un PDF, no permitas que el usuario haga nada más
 if not pdf_obj:
@@ -52,10 +54,10 @@ def create_embeddings(pdf):
     return knowledge_base, text
 
 
-def generate_summary(text, lang):
+def generate_summary(text):
     import openai
 
-    openai.api_key = API_KEY or st.secrets["API_KEY"]
+    openai.api_key = API_KEY
 
     # Cargar un tokenizador pre-entrenado
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -96,9 +98,7 @@ if pdf_obj:
     lang = detect(text)
     lang = 'en' if lang != 'es' else 'es'  # Solo considera inglés y español
 
-    # Cambia el título y las opciones según el idioma
-    st.title("PDFMaster: Your PDF Document Assistant" if lang ==
-             'en' else "PDFMaster: Tu asistente de documentos PDF")
+    # Cambia las opciones según el idioma
     st.sidebar.header('Options' if lang == 'en' else 'Opciones')
     options = [
         'Ask questions',
