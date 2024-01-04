@@ -1,3 +1,5 @@
+![Logo de PDFMaster](https://raw.githubusercontent.com/bladealex9848/Presion_Arterial/main/img/logo.png)
+
 # PDFMaster: Tu asistente de documentos PDF
 
 ## Descripción
