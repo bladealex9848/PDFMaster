@@ -10,7 +10,6 @@ from langchain.chains.question_answering import load_qa_chain
 from langdetect import detect
 
 # Configuración de Streamlit / Streamlit Configuration
-st.title("PDFMaster: Tu asistente de documentos PDF")
 st.set_page_config(
     page_title="PDFMaster: Tu asistente de documentos PDF",
     page_icon="📄",
@@ -22,9 +21,17 @@ st.set_page_config(
     }
 )
 
-# Carga y muestra el logo de la aplicación.
+# Carga y muestra el logo de la aplicación / Load and show the application logo
 logo = Image.open('img/logo.png')
 st.image(logo, width=250)
+
+# Título y descripción de la aplicación / Application title and description
+st.title("PDFMaster: Tu asistente de documentos PDF")
+st.write("""
+    Con PDFMaster, puedes convertir tus documentos PDF en conversaciones interactivas.
+    No más lecturas aburridas o búsquedas tediosas. Haz preguntas directamente a tus documentos
+    y obtén respuestas inmediatas gracias a la tecnología de chatGPT.
+    """)
 
 # Cargar API Key / Load API Key
 # Intenta cargar la API Key desde st.secrets / Try to load API Key from st.secrets
