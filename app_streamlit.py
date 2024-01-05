@@ -10,10 +10,6 @@ from langchain.chains.question_answering import load_qa_chain
 from langdetect import detect
 
 # Configuración de Streamlit / Streamlit Configuration
-st.set_page_config('PDFMaster')
-st.title("PDFMaster: Tu asistente de documentos PDF")
-
-# Configuración inicial de la página de Streamlit.
 st.set_page_config(
     page_title="PDFMaster: Tu asistente de documentos PDF",
     page_icon="📄",
