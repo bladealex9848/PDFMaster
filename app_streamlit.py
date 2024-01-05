@@ -9,17 +9,21 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
 from langdetect import detect
 
-# Configuración de Streamlit / Streamlit Configuration
-st.set_page_config(
-    page_title="PDFMaster: Tu asistente de documentos PDF",
-    page_icon="📄",
-    initial_sidebar_state='collapsed',
-    menu_items={
-        'Get Help': 'https://www.isabellaea.com',
-        'Report a bug': None,
-        'About': "PDFMaster es una herramienta completa para gestionar documentos PDF. Permite realizar diversas tareas como convertir PDF a Word, generar resúmenes, realizar preguntas y obtener respuestas específicas de un documento, y muchas otras funcionalidades que se están desarrollando."
-    }
-)
+
+st.set_page_config('PDFMaster')
+st.title("PDFMaster: Tu asistente de documentos PDF")
+
+# Configuración inicial de la página de Streamlit.
+#st.set_page_config(
+#    page_title="PDFMaster: Tu asistente de documentos PDF",
+#    page_icon="📄",
+#    initial_sidebar_state='collapsed',
+#    menu_items={
+#        'Get Help': 'https://www.isabellaea.com',
+#        'Report a bug': None,
+#        'About': "PDFMaster es una herramienta completa para gestionar documentos PDF. Permite realizar diversas tareas como convertir PDF a Word, generar resúmenes, realizar preguntas y obtener respuestas específicas de un documento, y muchas otras funcionalidades que se están desarrollando."
+#    }
+#)
 
 # Carga y muestra el logo de la aplicación.
 logo = Image.open('img/logo.png')
