@@ -21,25 +21,6 @@ st.set_page_config(
     }
 )
 
-# Personalización de estilos con CSS
-st.markdown("""
-<style>
-.streamlit-button {
-    margin: 5px 5px 5px 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-.streamlit-button:hover {
-    border-color: #f63366;
-}
-.streamlit-textarea {
-    height: 150px;
-}
-</style>
-""", unsafe_allow_html=True)
-
 # Carga y muestra el logo de la aplicación / Load and show the application logo
 logo = Image.open('img/logo.png')
 st.image(logo, width=250)
@@ -98,8 +79,6 @@ def create_embeddings(pdf):
 
     return knowledge_base, text
 
-if 'selected_prompt' not in st.session_state:
-    st.session_state['selected_prompt'] = ""
 
 # Principal / Main
 if pdf_obj:
@@ -163,23 +142,20 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
 
         # Crear botones para los prompts con descripciones emergentes
         for index, (prompt, label, description) in enumerate(prompts):
-            col = st.columns(2)[index % 2]  # Alternar entre las dos columnas
+            # Decide en qué columna colocar el botón basándose en su índice
+            col = st.columns(2)[index % 1]
             with col:
                 if st.button(label, help=description):
                     st.session_state['selected_prompt'] = prompt
-                    # Cambiar el estilo del botón seleccionado (feedback visual)
-                    st.markdown(f"""<style>.streamlit-button:nth-child({index+1}) {{ border-color: #f63366; }}</style>""", unsafe_allow_html=True)
-        
-        # Área de texto para mostrar el prompt seleccionado o para escribir preguntas
+
+        # Mostrar el área de texto con el prompt seleccionado o el ingresado por el usuario
         user_question = st.text_area(
             "Haz una pregunta sobre tu PDF:",
-            value=st.session_state['selected_prompt'],
-            height=150,
-            key="textarea"
+            value=st.session_state.get('selected_prompt', ''),
+            height=150
         )
 
         if user_question:
-            # Lógica para manejar la pregunta del usuario
             os.environ["OPENAI_API_KEY"] = API_KEY
             docs = knowledge_base.similarity_search(user_question, 10)
             llm = ChatOpenAI(model_name='gpt-3.5-turbo')
