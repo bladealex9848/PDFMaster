@@ -1,0 +1,13 @@
+streamlit
+Pillow
+PyPDF2
+huggingface_hub
+faiss-cpu
+anthropic
+reportlab
+sentence_transformers
+langdetect
+deep_translator
+httpx
+openai
+langchain
