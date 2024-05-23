@@ -6,3 +6,4 @@ PyPDF2
 # pdf2docx
 sentence_transformers
 langdetect
+langchain-community
