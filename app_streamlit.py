@@ -158,7 +158,7 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
         if user_question:
             os.environ["OPENAI_API_KEY"] = API_KEY
             docs = knowledge_base.similarity_search(user_question, 10)
-            llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+            llm = ChatOpenAI(model_name='gpt-4o-mini')
             chain = load_qa_chain(llm, chain_type="stuff")
             respuesta = chain.run(input_documents=docs, question=user_question)
             st.write(respuesta)
