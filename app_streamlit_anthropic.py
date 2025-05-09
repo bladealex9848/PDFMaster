@@ -153,28 +153,28 @@ def generate_ideal_response(question, document_content):
 
     try:
         response = client.chat.completions.create(
-            model='gpt-3.5-turbo',
+            model='gpt-4.1-nano',
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": question}
             ]
         )
-        
+
         response_content = response.choices[0].message.content
         evaluation = evaluate_response(question, document_content, response_content)
 
         while "mejorar" in evaluation.lower() or "revisar" in evaluation.lower():
             st.info("La IA está trabajando para mejorar la respuesta. Por favor, espere...")
             prompt = f"Pregunta: {question}\nContenido del documento: {document_content}\nRespuesta: {response_content}\nEvaluación: {evaluation}\n\nGenera una respuesta mejorada basada en la evaluación proporcionada."
-            
+
             response = client.chat.completions.create(
-                model='gpt-3.5-turbo',
+                model='gpt-4.1-nano',
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
                 ]
             )
-            
+
             response_content = response.choices[0].message.content
             evaluation = evaluate_response(question, document_content, response_content)
 
@@ -193,9 +193,9 @@ def extract_text():
 
 def summarize_text(text):
     docs = [{"page_content": text}]
-    llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+    llm = ChatOpenAI(model_name='gpt-4.1-nano')
     chain = load_qa_chain(llm, chain_type="stuff")
-    
+
     question = "Por favor, genera un resumen conciso del texto proporcionado."
     summary = chain.run(input_documents=docs, question=question)
     return summary
@@ -211,7 +211,7 @@ def generate_pdf(text):
     styles = getSampleStyleSheet()
     elements = [Paragraph(text, styles['Normal'])]
     doc.build(elements)
-    
+
     return buffer
 
 # Principal
@@ -303,7 +303,7 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
         st.header("Extract Text" if lang == 'en' else "Extraer texto")
         extracted_text = extract_text()
         st.write(extracted_text)
-        
+
         # Descargar texto extraído como PDF
         if st.button("Download as PDF" if lang == 'en' else "Descargar como PDF"):
             pdf_buffer = generate_pdf(extracted_text)
@@ -313,7 +313,7 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
                 file_name="extracted_text.pdf",
                 mime="application/pdf"
             )
-            
+
     # Resumir texto
     elif selected_option == ('Summarize text' if lang == 'en' else 'Resumir texto'):
         st.header("Summarize Text" if lang == 'en' else "Resumir texto")
@@ -325,16 +325,16 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
     elif selected_option == ('Translate text' if lang == 'en' else 'Traducir texto'):
         st.header("Translate Text" if lang == 'en' else "Traducir texto")
         text_to_translate = extract_text()
-        
+
         target_lang = st.selectbox(
             "Select target language" if lang == 'en' else "Seleccionar idioma de destino",
             ('en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'hi', 'ar')
         )
-        
+
         if st.button("Translate" if lang == 'en' else "Traducir"):
             translated_text = translate_text(text_to_translate, target_lang)
             st.write(translated_text)
-            
+
             # Descargar texto traducido como PDF
             if st.button("Download as PDF" if lang == 'en' else "Descargar como PDF"):
                 pdf_buffer = generate_pdf(translated_text)
@@ -351,4 +351,4 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
     st.sidebar.markdown('Alexander Oviedo Fadul')
     st.sidebar.markdown(
         "[GitHub](https://github.com/bladealex9848) | [Website](https://alexander.oviedo.isabellaea.com/) | [Instagram](https://www.instagram.com/alexander.oviedo.fadul) | [Twitter](https://twitter.com/alexanderofadul) | [Facebook](https://www.facebook.com/alexanderof/) | [WhatsApp](https://api.whatsapp.com/send?phone=573015930519&text=Hola%20!Quiero%20conversar%20contigo!%20)"
-    )          
+    )

@@ -97,7 +97,7 @@ def generate_summary(text):
         ]
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4.1-nano",
             messages=messages,
             max_tokens=300,
             temperature=0.5,
@@ -123,7 +123,7 @@ if pdf_obj:
     if selected_option == 'Realizar preguntas':
         st.header("Realizar preguntas")
         knowledge_base, _ = create_embeddings(pdf_obj)
-        
+
         # Definir los prompts y sus descripciones
         prompts = [
             ("""Realiza un control de legalidad sobre una solicitud de vigilancia judicial administrativa recibida por el Consejo Seccional de la Judicatura de Sucre - Colombia. Evalúa la solicitud basándote en los criterios del ACUERDO No. PSAA11-8716, incluyendo competencia territorial, legitimidad del interesado, completitud y claridad de la solicitud, y su conformidad con los procedimientos y requisitos establecidos en el acuerdo. Presenta tu análisis en una tabla con las columnas 'Criterio', 'Descripción', 'Aplicación al Caso Hipotético', considerando si cada aspecto cumple o no con los requisitos, e incluye observaciones o recomendaciones pertinentes. Asegúrate de verificar si la solicitud pertenece a la jurisdicción territorial de Sucre, si el solicitante tiene un interés legítimo, y si la solicitud es completa y clara.
@@ -140,12 +140,12 @@ Para terminar genera un parrafo titulado problema, donde ese parrafo puede segui
 4. **Acciones o Documentos Presentados**: Menciona las acciones o documentos presentados por el solicitante que son relevantes para la solicitud (por ejemplo, "presentó solicitud de medidas cautelares", "memorial aportando la liquidación del crédito").
 5. **Estado Actual o Demora**: Destaca el estado actual de la solicitud o la demora específica que se está denunciando (por ejemplo, "el despacho no se ha pronunciado", "no se ha registrado movimiento alguno").
 
-Este párrafo titulado problema permitirá resumir la información relevante de manera coherente, manteniendo un enfoque claro en el solicitante, el proceso judicial implicado, el problema denunciado y cualquier acción relevante tomada por el solicitante.""", 
-         "Evaluar Legalidad", 
+Este párrafo titulado problema permitirá resumir la información relevante de manera coherente, manteniendo un enfoque claro en el solicitante, el proceso judicial implicado, el problema denunciado y cualquier acción relevante tomada por el solicitante.""",
+         "Evaluar Legalidad",
          "Realiza una evaluación de legalidad detallada según el ACUERDO No. PSAA11-8716"),
-            ("Analiza el documento cargado y genera un resumen estructurado. Comienza con un título claro que refleje el tema principal del documento. En el desarrollo del resumen, inicia especificando el remitente, su institución, el número de oficio y la fecha del documento. Luego, proporciona un resumen conciso del contenido, destacando los puntos más relevantes de manera coherente. Asegúrate de presentar la información de manera accesible, adaptando el tono del resumen según sea necesario para facilitar su comprensión.", 
-         "Generar Resumen Estructurado", 
-         "Genera un resumen estructurado del documento, resaltando los elementos clave.")        
+            ("Analiza el documento cargado y genera un resumen estructurado. Comienza con un título claro que refleje el tema principal del documento. En el desarrollo del resumen, inicia especificando el remitente, su institución, el número de oficio y la fecha del documento. Luego, proporciona un resumen conciso del contenido, destacando los puntos más relevantes de manera coherente. Asegúrate de presentar la información de manera accesible, adaptando el tono del resumen según sea necesario para facilitar su comprensión.",
+         "Generar Resumen Estructurado",
+         "Genera un resumen estructurado del documento, resaltando los elementos clave.")
         ]
 
         # Crear botones para los prompts con descripciones emergentes
@@ -166,7 +166,7 @@ Este párrafo titulado problema permitirá resumir la información relevante de 
         if user_question:
             os.environ["OPENAI_API_KEY"] = API_KEY
             docs = knowledge_base.similarity_search(user_question, 3)
-            llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+            llm = ChatOpenAI(model_name='gpt-4.1-nano')
             chain = load_qa_chain(llm, chain_type="stuff")
             respuesta = chain.run(input_documents=docs, question=user_question)
             st.write(respuesta)
